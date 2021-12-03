@@ -116,7 +116,7 @@ def test_ai_move_1():
     player = 2
     peg = (2, 3)
     selected_move = ai_move(board, peg, player)
-    expected_move = ((2, 3), (3, 4))
+    expected_move = ((2, 3), (3, 3))
     assert selected_move == expected_move
 
 
@@ -135,7 +135,7 @@ def test_ai_move_2():
     player = 2
     peg = (2, 2)
     selected_move = ai_move(board, peg, player)
-    expected_move = ((2, 2), (3, 2))
+    expected_move = ((2, 2), (3, 1))
     assert selected_move == expected_move
 
 
