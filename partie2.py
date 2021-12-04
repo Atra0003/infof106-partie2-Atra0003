@@ -157,15 +157,39 @@ def select_peg_pion(board, player, DEBUT, FIN, PAS):
                     return i, j
                 
 
+def reverse_manhattan(liste, board, pion_select, player, choix):
+    cpt = 0
+    for i in liste:
+        for j in i:
+            if (0, 0) == j:
+                index_pos = cpt
+        cpt += 1
+    if choix == "i":
+        index_new_pos = (index_pos - 1) % len(liste)
+    else:
+        index_new_pos = (index_pos + 1) % len(liste)
+    manhattan_new_pos = min(liste[index_new_pos])
+    controle = 0
+    t_pos_one = (pion_select[0] - manhattan_new_pos[0], pion_select[1] - manhattan_new_pos[1])
+    res_is_in_board_1 = is_in_board(board, t_pos_one)
+    t_pos_two = (pion_select[0] + manhattan_new_pos[0], pion_select[1] + manhattan_new_pos[1])
+    res_is_in_board_2 = is_in_board(board, t_pos_two)
+
+    if res_is_in_board_1 == True and board[pion_select[0] - manhattan_new_pos[0]][pion_select[1] - manhattan_new_pos[1]] == player:
+        controle = 1
+        res = (pion_select[0] - manhattan_new_pos[0], pion_select[1] - manhattan_new_pos[1])
+    if res_is_in_board_2 == True and controle == 0 and board[pion_select[0] + manhattan_new_pos[0]][pion_select[1] + manhattan_new_pos[1]]:
+        board
+        res = (pion_select[0] + manhattan_new_pos[0], pion_select[1] + manhattan_new_pos[1])
+
+    return res 
+
 def input_select_peg(board, player):
     if player == 1:
         DEBUT, FIN, PAS = 0, len(board), 1
     else:
         DEBUT, FIN, PAS = len(board)-1, 0, -1
     pion_select = select_peg_pion(board, player, DEBUT, FIN, PAS)
-    #board[2][5] = 1
-    #board[3][3] = 1
-    #board[4][1] = 1
     board[pion_select[0]][pion_select[1]] = 3
     
     print(print_board(board))
@@ -201,39 +225,44 @@ def input_select_peg(board, player):
 
         #deplacement haut (i)
         if choix == "i":
-            liste_vertical = []
+            liste_vertical_1 = []
+            print(res)
             for i in range(DEBUT, FIN, PAS):
-                cpt = 0
+                liste_vertical_2 = []
                 for j in range(len(board[0])):
-                    if (board[i][j] == player or board[i][j] == 3)and cpt < 1:
-                        liste_vertical.append((i,j))
-                        cpt = 1
-            board[pion_select[0]][pion_select[1]] = player
-            index_new_pos = liste_vertical.index((pion_select[0] ,pion_select[1]))
-            new_pos = (index_new_pos + 1) % len(liste_vertical)
-            board[liste_vertical[new_pos][0]][liste_vertical[new_pos][1]] = 3
-            pion_select = (liste_vertical[new_pos][0], liste_vertical[new_pos][1])
-            res = (liste_vertical[new_pos][0], liste_vertical[new_pos][1])
+                    if (board[i][j] == player or board[i][j] == 3):
+                        pos_arriver = (i , j)
+                        d = (abs(res[0] - pos_arriver[0]), abs(res[1] - pos_arriver[1]))
+                        liste_vertical_2.append((d[0], d[1]))
+                if len(liste_vertical_2) > 0:
+                    liste_vertical_1.append(liste_vertical_2)
+            res_reverse_manhattan = reverse_manhattan(liste_vertical_1, board, res, 1, choix)
+            board[res[0]][res[1]] = 1
+            board[res_reverse_manhattan[0]][res_reverse_manhattan[1]] = 3
+            res = res_reverse_manhattan
+
             #print(res)
             print(print_board(board))
 
         #deplacement bas (k)
         if choix == "k":
-            board[pion_select[0]][pion_select[1]] = player
-            liste_vertical = []
+            liste_vertical_1 = []
+            print(res)
             for i in range(DEBUT, FIN, PAS):
-                cpt = 0
+                liste_vertical_2 = []
                 for j in range(len(board[0])):
-                    if (board[i][j] == player or board[i][j] == 3)and cpt < 1:
-                        liste_vertical.append((i,j))
-                        cpt = 1
-            index_new_pos = liste_vertical.index((pion_select[0] ,pion_select[1]))
-            new_pos = (index_new_pos - 1) % len(liste_vertical)
-            board[liste_vertical[new_pos][0]][liste_vertical[new_pos][1]] = 3
-            pion_select = (liste_vertical[new_pos][0], liste_vertical[new_pos][1])
-            res = (liste_vertical[new_pos][0], liste_vertical[new_pos][1])
+                    if (board[i][j] == player or board[i][j] == 3):
+                        pos_arriver = (i , j)
+                        d = (abs(res[0] - pos_arriver[0]), abs(res[1] - pos_arriver[1]))
+                        liste_vertical_2.append((d[0], d[1]))
+                if len(liste_vertical_2) > 0:
+                    liste_vertical_1.append(liste_vertical_2)
+            res_reverse_manhattan = reverse_manhattan(liste_vertical_1, board, res, 1, choix)
+            board[res[0]][res[1]] = 1
+            board[res_reverse_manhattan[0]][res_reverse_manhattan[1]] = 3
+            res = res_reverse_manhattan
             print(print_board(board))
-
+            
         choix = input("entrer votre deplacement : ")
     #print(res)
     return res
