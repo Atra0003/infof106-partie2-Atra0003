@@ -85,10 +85,14 @@ def print_board(board):
     print()
 
 def ai_select_peg(board, player):
+    if player == 1:
+        DEBUT, FIN, PAS = 0, len(board), 1
+    else:
+        DEBUT, FIN, PAS = len(board)-1, 0, -1
     verificateur = 0
     pion = []
-    for i in range(len(board)-1, 0, -1):
-        for j in range(len(board[i])):
+    for i in range(DEBUT, FIN, PAS):
+        for j in range(len(board[0])):
             if board[i][j] == player:
                 jouable = jouabilite(board, (i, j))
                 if jouable == True:
@@ -126,6 +130,7 @@ def ai_move(board, pos, player):
         move_1, move_2, move_3 = (pos[0]+1,pos[1]), (pos[0]+1,pos[1]+1), (pos[0]+1,pos[1]-1)
     else:
         move_1, move_2, move_3 = (pos[0]-1,pos[1]), (pos[0]-1,pos[1]-1), (pos[0]-1,pos[1]+1)
+
     coup_avant, coup_dia_d, coup_dia_g = False, False, False
     if 0 <= move_1[0] <= len(board) and 0 <= move_1[0] <= len(board):
         coup_avant = board[move_1[0]][move_1[1]] == 0
@@ -154,15 +159,19 @@ def select_peg_pion(board, player, DEBUT, FIN, PAS):
 
 def input_select_peg(board, player):
     if player == 1:
-        DEBUT, FIN, PAS = 0, len(board)-1, 1
+        DEBUT, FIN, PAS = 0, len(board), 1
     else:
         DEBUT, FIN, PAS = len(board)-1, 0, -1
     pion_select = select_peg_pion(board, player, DEBUT, FIN, PAS)
+    #board[2][5] = 1
+    #board[3][3] = 1
+    #board[4][1] = 1
     board[pion_select[0]][pion_select[1]] = 3
+    
     print(print_board(board))
     
     # Cas ou le joueur veux choisir un autre pion
-    choix = input("entrer une valeur : ")
+    choix = input("entrer votre deplacement : ")
     res = pion_select[:]
     while choix != "y":
         #deplacement droite (l)
@@ -192,23 +201,41 @@ def input_select_peg(board, player):
 
         #deplacement haut (i)
         if choix == "i":
-            pos_player = []
+            liste_vertical = []
             for i in range(DEBUT, FIN, PAS):
+                cpt = 0
                 for j in range(len(board[0])):
-                    if board[i][j] == player:
-                        pos_arriver = board[i][j]
-                        d = (abs(res[0] - pos_arriver[0]), abs(res[1] - pos_arriver[1]))
-                        pos_player.append((d[0], d[1]))
-            print(pos_player)
-        
+                    if (board[i][j] == player or board[i][j] == 3)and cpt < 1:
+                        liste_vertical.append((i,j))
+                        cpt = 1
+            board[pion_select[0]][pion_select[1]] = player
+            index_new_pos = liste_vertical.index((pion_select[0] ,pion_select[1]))
+            new_pos = (index_new_pos + 1) % len(liste_vertical)
+            board[liste_vertical[new_pos][0]][liste_vertical[new_pos][1]] = 3
+            pion_select = (liste_vertical[new_pos][0], liste_vertical[new_pos][1])
+            res = (liste_vertical[new_pos][0], liste_vertical[new_pos][1])
+            #print(res)
             print(print_board(board))
 
         #deplacement bas (k)
         if choix == "k":
-            
+            board[pion_select[0]][pion_select[1]] = player
+            liste_vertical = []
+            for i in range(DEBUT, FIN, PAS):
+                cpt = 0
+                for j in range(len(board[0])):
+                    if (board[i][j] == player or board[i][j] == 3)and cpt < 1:
+                        liste_vertical.append((i,j))
+                        cpt = 1
+            index_new_pos = liste_vertical.index((pion_select[0] ,pion_select[1]))
+            new_pos = (index_new_pos - 1) % len(liste_vertical)
+            board[liste_vertical[new_pos][0]][liste_vertical[new_pos][1]] = 3
+            pion_select = (liste_vertical[new_pos][0], liste_vertical[new_pos][1])
+            res = (liste_vertical[new_pos][0], liste_vertical[new_pos][1])
             print(print_board(board))
 
-        choix = input("entrer une valeur : ")
+        choix = input("entrer votre deplacement : ")
+    #print(res)
     return res
 
 
@@ -216,8 +243,8 @@ def lancer_jeu(file):
     board = init_board(file)
     print_board(board)
     pos = ai_select_peg(board, 2)
-    print(ai_move(board, pos, 2))
-    input_select_peg(board, 1)
+    ai_move(board, pos, 2)
+    print(input_select_peg(board, 1))
 
 
 def main():
