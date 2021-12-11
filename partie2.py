@@ -1,5 +1,5 @@
 import os, sys
-from random import choice, seed
+from random import choice
 
 def extract_pos(n, str_pos):
     """Traduit le coup rentrer en input en coordonné ligne colone pour la matrice"""
@@ -85,6 +85,9 @@ def print_board(board):
     print()
 
 def ai_select_peg(board, player):
+    """
+    l'ia selectionne un pion à jouer 
+    """
     if player == 1:
         DEBUT, FIN, PAS = 0, len(board), 1
     else:
@@ -106,6 +109,10 @@ def ai_select_peg(board, player):
             return res 
     
 def is_in_board(board, t):
+    """
+    Permet de savoir si un tuple de position est 
+    dans la matrice 
+    """
     board = len(board)
     if 0<= t[0]< board and 0<= t[1]< board:
         res = True
@@ -114,6 +121,9 @@ def is_in_board(board, t):
     return res
     
 def jouabilite(plateau, t):
+    """
+    Permet de savoir si le pion sélectionner est cappablae de bouger 
+    """
     move_avant, move_dia_gauche, move_dia_droit = False, False, False
     if is_in_board(plateau, (t[0]+1, t[1])):
         move_avant = plateau[t[0]+1][t[1]] == 0
@@ -125,6 +135,9 @@ def jouabilite(plateau, t):
     return res 
 
 def ai_move(board, pos, player):
+    """
+    sélectionne de manière aléatiore la position d'arriver du pion appartenant à l'ia 
+    """
     liste_ia_move = []
     if player == 2:
         move_1, move_2, move_3 = (pos[0]+1,pos[1]), (pos[0]+1,pos[1]+1), (pos[0]+1,pos[1]-1)
@@ -147,57 +160,56 @@ def ai_move(board, pos, player):
     return pos, (choice(sorted(liste_ia_move)))
 
 def select_peg_pion(board, player, DEBUT, FIN, PAS):
-    verificateur = 0
-    pion = []
+    """
+    sélectionne le pion le plus proche de la victoire 
+    """
     for i in range(DEBUT, FIN, PAS):
         for j in range(len(board[0])):
             if board[i][j] == player:
                 jouable = jouabilite(board, (i, j))
                 if jouable == True:
                     return i, j
-                
 
-def reverse_manhattan(liste, board, pion_select, player, choix):
+def reverse_manhattan(liste, pos, choix):
+    """
+    renvoie la position du pion potentiellement sélectionner 
+    """
     cpt = 0
+    controle = 0
     for i in liste:
         for j in i:
-            if (0, 0) == j:
-                index_pos = cpt
+            if controle == 0:
+                if pos == j[1]:
+                    index_pos = cpt
+                    controle = 1 
         cpt += 1
     if choix == "i":
         index_new_pos = (index_pos - 1) % len(liste)
     else:
         index_new_pos = (index_pos + 1) % len(liste)
-    manhattan_new_pos = min(liste[index_new_pos])
-    controle = 0
-    t_pos_one = (pion_select[0] - manhattan_new_pos[0], pion_select[1] - manhattan_new_pos[1])
-    res_is_in_board_1 = is_in_board(board, t_pos_one)
-    t_pos_two = (pion_select[0] + manhattan_new_pos[0], pion_select[1] + manhattan_new_pos[1])
-    res_is_in_board_2 = is_in_board(board, t_pos_two)
-
-    if res_is_in_board_1 == True and board[pion_select[0] - manhattan_new_pos[0]][pion_select[1] - manhattan_new_pos[1]] == player:
-        controle = 1
-        res = (pion_select[0] - manhattan_new_pos[0], pion_select[1] - manhattan_new_pos[1])
-    if res_is_in_board_2 == True and controle == 0 and board[pion_select[0] + manhattan_new_pos[0]][pion_select[1] + manhattan_new_pos[1]]:
-        board
-        res = (pion_select[0] + manhattan_new_pos[0], pion_select[1] + manhattan_new_pos[1])
-
-    return res 
+    plus_proche = liste[index_new_pos][0]
+    for i in liste[index_new_pos]:
+        if i[0] < plus_proche[0]:
+            plus_proche = i
+    return plus_proche[1]
 
 def input_select_peg(board, player):
+    """
+    Renvoie la position du pion sélectionner 
+    """
     if player == 1:
         DEBUT, FIN, PAS = 0, len(board), 1
     else:
         DEBUT, FIN, PAS = len(board)-1, 0, -1
     pion_select = select_peg_pion(board, player, DEBUT, FIN, PAS)
     board[pion_select[0]][pion_select[1]] = 3
-    
     print(print_board(board))
-    
+
     # Cas ou le joueur veux choisir un autre pion
     choix = input("entrer votre deplacement : ")
     res = pion_select[:]
     while choix != "y":
+
         #deplacement droite (l)
         cpt = 0
         if choix == "l":
@@ -209,7 +221,7 @@ def input_select_peg(board, player):
             board[pion_select[0]][(pion_select[1]+cpt) % len(board[0])] = 3
             res = pion_select[0], pion_select[1]+cpt
             pion_select = [pion_select[0], (pion_select[1]+cpt) % len(board[0])]
-            print(print_board(board))
+            
            
         #deplacement gauche (j)
         if choix == "j":
@@ -221,7 +233,7 @@ def input_select_peg(board, player):
             board[pion_select[0]][(pion_select[1]-cpt) % len(board[0])] = 3
             res = pion_select[0], pion_select[1]-cpt
             pion_select = [pion_select[0], (pion_select[1]-cpt) % len(board[0])]
-            print(print_board(board))
+            
 
         #deplacement haut (i)
         if choix == "i":
@@ -231,44 +243,43 @@ def input_select_peg(board, player):
                 liste_vertical_2 = []
                 for j in range(len(board[0])):
                     if (board[i][j] == player or board[i][j] == 3):
-                        pos_arriver = (i , j)
-                        d = (abs(res[0] - pos_arriver[0]), abs(res[1] - pos_arriver[1]))
-                        liste_vertical_2.append((d[0], d[1]))
+                        if jouabilite(board, (i,j)) == True:
+                            pos_arriver = (i , j)
+                            d_m = abs(pos_arriver[0] - res[0]) + abs(pos_arriver[1] - res[1])
+                            liste_vertical_2.append((d_m ,(i, j)))
                 if len(liste_vertical_2) > 0:
                     liste_vertical_1.append(liste_vertical_2)
-            res_reverse_manhattan = reverse_manhattan(liste_vertical_1, board, res, 1, choix)
+            manhattan = reverse_manhattan(liste_vertical_1, res, "i")
             board[res[0]][res[1]] = 1
-            board[res_reverse_manhattan[0]][res_reverse_manhattan[1]] = 3
-            res = res_reverse_manhattan
-
-            #print(res)
-            print(print_board(board))
+            board[manhattan[0]][manhattan[1]] = 3
+            res = manhattan
 
         #deplacement bas (k)
         if choix == "k":
             liste_vertical_1 = []
-            print(res)
+            #print(res)
             for i in range(DEBUT, FIN, PAS):
                 liste_vertical_2 = []
                 for j in range(len(board[0])):
                     if (board[i][j] == player or board[i][j] == 3):
-                        pos_arriver = (i , j)
-                        d = (abs(res[0] - pos_arriver[0]), abs(res[1] - pos_arriver[1]))
-                        liste_vertical_2.append((d[0], d[1]))
+                        if jouabilite(board,(i, j)) == True:
+                            pos_arriver = (i , j)
+                            d_m = abs(pos_arriver[0] - res[0]) + abs(pos_arriver[1] - res[1])
+                            liste_vertical_2.append((d_m, (i, j)))
                 if len(liste_vertical_2) > 0:
                     liste_vertical_1.append(liste_vertical_2)
-            res_reverse_manhattan = reverse_manhattan(liste_vertical_1, board, res, 1, choix)
+            manhattan = reverse_manhattan(liste_vertical_1, res,"k")
             board[res[0]][res[1]] = 1
-            board[res_reverse_manhattan[0]][res_reverse_manhattan[1]] = 3
-            res = res_reverse_manhattan
-            print(print_board(board))
-            
+            board[manhattan[0]][manhattan[1]] = 3
+            res = manhattan
+        print(print_board(board))
         choix = input("entrer votre deplacement : ")
-    #print(res)
     return res
 
-
 def lancer_jeu(file):
+    """
+    
+    """
     board = init_board(file)
     print_board(board)
     pos = ai_select_peg(board, 2)
@@ -277,6 +288,9 @@ def lancer_jeu(file):
 
 
 def main():
+    """
+    Vérifie qu'il n'y a pas un fichier board 
+    """
     argument = sys.argv
     if len(argument) == 1:
         lancer_jeu(7)
