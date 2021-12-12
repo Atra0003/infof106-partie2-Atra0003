@@ -97,7 +97,7 @@ def ai_select_peg(board, player):
     for i in range(DEBUT, FIN, PAS):
         for j in range(len(board[0])):
             if board[i][j] == player:
-                jouable = jouabilite(board, (i, j))
+                jouable = jouabilite(board, (i, j), player)
                 if jouable == True:
                     pion.append((i, j))
                     verificateur = 1
@@ -120,17 +120,25 @@ def is_in_board(board, t):
         res = False
     return res
     
-def jouabilite(plateau, t):
+def jouabilite(plateau, t, player):
     """
     Permet de savoir si le pion sélectionner est cappablae de bouger 
     """
     move_avant, move_dia_gauche, move_dia_droit = False, False, False
-    if is_in_board(plateau, (t[0]+1, t[1])):
-        move_avant = plateau[t[0]+1][t[1]] == 0
-    if is_in_board(plateau, (t[0]+1, t[1]-1)):
-        move_dia_gauche = plateau[t[0]+1][t[1]-1] == 0 or plateau[t[0]+1][t[1]-1] == 1
-    if is_in_board(plateau, (t[0]+1, t[1]+1)):
-        move_dia_droit = plateau[t[0]+1][t[1]+1] == 0 or plateau[t[0]+1][t[1]+1] == 1
+    if player == 2:
+        if is_in_board(plateau, (t[0]+1, t[1])):
+            move_avant = plateau[t[0]+1][t[1]] == 0
+        if is_in_board(plateau, (t[0]+1, t[1]-1)):
+            move_dia_gauche = plateau[t[0]+1][t[1]-1] == 0 or plateau[t[0]+1][t[1]-1] == 1
+        if is_in_board(plateau, (t[0]+1, t[1]+1)):
+            move_dia_droit = plateau[t[0]+1][t[1]+1] == 0 or plateau[t[0]+1][t[1]+1] == 1
+    else:
+        if is_in_board(plateau, (t[0]-1, t[1])):
+            move_avant = plateau[t[0]-1][t[1]] == 0
+        if is_in_board(plateau, (t[0]-1, t[1]-1)):
+            move_dia_gauche = plateau[t[0]-1][t[1]-1] == 0 or plateau[t[0]-1][t[1]-1] == 1
+        if is_in_board(plateau, (t[0]-1, t[1]+1)):
+            move_dia_droit = plateau[t[0]-1][t[1]+1] == 0 or plateau[t[0]-1][t[1]+1] == 1
     res = move_avant or move_dia_gauche or move_dia_droit
     return res 
 
@@ -166,7 +174,7 @@ def select_peg_pion(board, player, DEBUT, FIN, PAS):
     for i in range(DEBUT, FIN, PAS):
         for j in range(len(board[0])):
             if board[i][j] == player:
-                jouable = jouabilite(board, (i, j))
+                jouable = jouabilite(board, (i, j), player)
                 if jouable == True:
                     return i, j
 
@@ -262,7 +270,7 @@ def input_select_peg(board, player):
                 liste_vertical_2 = []
                 for j in range(len(board[0])):
                     if (board[i][j] == player or board[i][j] == 3):
-                        if jouabilite(board,(i, j)) == True:
+                        if jouabilite(board,(i, j), player) == True:
                             pos_arriver = (i , j)
                             d_m = abs(pos_arriver[0] - res[0]) + abs(pos_arriver[1] - res[1])
                             liste_vertical_2.append((d_m, (i, j)))
