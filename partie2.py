@@ -1,6 +1,18 @@
 import os, sys
 from random import choice
 
+def winner(board):
+    """Vérifie si l'un des deux joueur à gagné la partie"""
+    n = len(board)
+    if 1 in board[0]: # Cas ou les blancs gagne
+        gagnat = 1
+    elif 2 in board[n-1]: # Cas ou les noirs gagne 
+        gagnat = 2
+    else:
+        gagnat = None # Cas ou il n'y a pas de gagnat ou pas encore(partie pas encore terminé)
+    return gagnat
+
+
 def extract_pos(n, str_pos):
     """Traduit le coup rentrer en input en coordonné ligne colone pour la matrice"""
     cpt = 1 
@@ -136,9 +148,9 @@ def jouabilite(plateau, t, player):
         if is_in_board(plateau, (t[0]-1, t[1])):
             move_avant = plateau[t[0]-1][t[1]] == 0
         if is_in_board(plateau, (t[0]-1, t[1]-1)):
-            move_dia_gauche = plateau[t[0]-1][t[1]-1] == 0 or plateau[t[0]-1][t[1]-1] == 1
+            move_dia_gauche = plateau[t[0]-1][t[1]-1] == 0 or plateau[t[0]-1][t[1]-1] == 2
         if is_in_board(plateau, (t[0]-1, t[1]+1)):
-            move_dia_droit = plateau[t[0]-1][t[1]+1] == 0 or plateau[t[0]-1][t[1]+1] == 1
+            move_dia_droit = plateau[t[0]-1][t[1]+1] == 0 or plateau[t[0]-1][t[1]+1] == 2
     res = move_avant or move_dia_gauche or move_dia_droit
     return res 
 
@@ -153,12 +165,14 @@ def ai_move(board, pos, player):
         move_1, move_2, move_3 = (pos[0]-1,pos[1]), (pos[0]-1,pos[1]-1), (pos[0]-1,pos[1]+1)
 
     coup_avant, coup_dia_d, coup_dia_g = False, False, False
-    if 0 <= move_1[0] <= len(board) and 0 <= move_1[0] <= len(board):
+    if 0 <= move_1[0] <= len(board) and 0 <= move_1[1] <= len(board):
         coup_avant = board[move_1[0]][move_1[1]] == 0
-    if 0 <= move_2[0] <= len(board) and 0 <= move_2[1] <= len(board):
-        coup_dia_g = board[move_2[0]][move_2[1]] != player
-    if 0 <= move_3[0] <= len(board) and 0 <= move_3[1] <= len(board):
-        coup_dia_d = board[move_3[0]][move_3[1]] != player
+    if is_in_board(board, (pos[0]+1,pos[1]-1)):
+        if 0 <= move_2[0] <= len(board) and 0 <= move_2[1] <= len(board):
+            coup_dia_g = board[move_2[0]][move_2[1]] != player
+    if is_in_board(board, (pos[0]+1,pos[1]-1)):
+        if 0 <= move_3[0] <= len(board) and 0 <= move_3[1] <= len(board):
+            coup_dia_d = board[move_3[0]][move_3[1]] != player
     if coup_avant == True:
         liste_ia_move.append(move_1)
     if coup_dia_d == True:
@@ -211,78 +225,110 @@ def input_select_peg(board, player):
         DEBUT, FIN, PAS = len(board)-1, 0, -1
     pion_select = select_peg_pion(board, player, DEBUT, FIN, PAS)
     board[pion_select[0]][pion_select[1]] = 3
-    print(print_board(board))
+    print_board(board)
 
     # Cas ou le joueur veux choisir un autre pion
     choix = input("entrer votre deplacement : ")
     res = pion_select[:]
     while choix != "y":
-
         #deplacement droite (l)
-        cpt = 0
+        board[res[0]][res[1]] = player
         if choix == "l":
             cpt = 1
-            copy_pion_select = pion_select[:]
-            while board[pion_select[0]][(pion_select[1]+cpt) % len(board[0])] != player:
+            while board[res[0]][(res[1]+cpt) % len(board[0])] != player:
                 cpt += 1
-            board[copy_pion_select[0]][copy_pion_select[1]] = player
-            board[pion_select[0]][(pion_select[1]+cpt) % len(board[0])] = 3
-            res = pion_select[0], pion_select[1]+cpt
-            pion_select = [pion_select[0], (pion_select[1]+cpt) % len(board[0])]
+            board[res[0]][(res[1]+cpt) % len(board[0])] = 3
+            res = res[0], (res[1] + cpt ) % len(board[0])
             
-           
         #deplacement gauche (j)
         if choix == "j":
             cpt = 1
-            copy_pion_select = pion_select[:]
-            while board[pion_select[0]][(pion_select[1]-cpt) % len(board[0])] != player:
+            while board[res[0]][(res[1]-cpt) % len(board[0])] != player:
                 cpt -= 1
-            board[copy_pion_select[0]][copy_pion_select[1]] = player
-            board[pion_select[0]][(pion_select[1]-cpt) % len(board[0])] = 3
-            res = pion_select[0], pion_select[1]-cpt
-            pion_select = [pion_select[0], (pion_select[1]-cpt) % len(board[0])]
-            
-
+            board[res[0]][(res[1]-cpt) % len(board[0])] = 3
+            res = res[0], (res[1] - cpt) % len(board[0])
+           
         #deplacement haut (i)
         if choix == "i":
             liste_vertical_1 = []
-            print(res)
             for i in range(DEBUT, FIN, PAS):
                 liste_vertical_2 = []
                 for j in range(len(board[0])):
                     if (board[i][j] == player or board[i][j] == 3):
-                        if jouabilite(board, (i,j)) == True:
+                        if jouabilite(board, (i,j), 1) == True:
                             pos_arriver = (i , j)
                             d_m = abs(pos_arriver[0] - res[0]) + abs(pos_arriver[1] - res[1])
                             liste_vertical_2.append((d_m ,(i, j)))
                 if len(liste_vertical_2) > 0:
                     liste_vertical_1.append(liste_vertical_2)
             manhattan = reverse_manhattan(liste_vertical_1, res, "i")
-            board[res[0]][res[1]] = 1
             board[manhattan[0]][manhattan[1]] = 3
             res = manhattan
 
         #deplacement bas (k)
         if choix == "k":
             liste_vertical_1 = []
-            #print(res)
             for i in range(DEBUT, FIN, PAS):
                 liste_vertical_2 = []
                 for j in range(len(board[0])):
                     if (board[i][j] == player or board[i][j] == 3):
-                        if jouabilite(board,(i, j), player) == True:
+                        if jouabilite(board,(i, j), 1) == True:
                             pos_arriver = (i , j)
                             d_m = abs(pos_arriver[0] - res[0]) + abs(pos_arriver[1] - res[1])
                             liste_vertical_2.append((d_m, (i, j)))
                 if len(liste_vertical_2) > 0:
                     liste_vertical_1.append(liste_vertical_2)
             manhattan = reverse_manhattan(liste_vertical_1, res,"k")
-            board[res[0]][res[1]] = 1
             board[manhattan[0]][manhattan[1]] = 3
             res = manhattan
-        print(print_board(board))
+        print_board(board)
+        board[res[0]][res[1]] = player
         choix = input("entrer votre deplacement : ")
+    board[res[0]][res[1]] = player
     return res
+
+def pos_arriver(board, pos):
+    liste =[]
+    move_avant, move_dia_gauche, move_dia_droit = False, False, False
+    if is_in_board(board, (pos[0]-1,pos[1])):
+        move_avant = board[pos[0]-1][pos[1]] == 0 
+        if move_avant == True:
+            liste.append([(pos[0]-1, pos[1]), board[pos[0]-1][pos[1]]])
+            board[pos[0]-1][pos[1]] = 3
+    if is_in_board(board, (pos[0]-1,pos[1]-1)):
+        move_dia_gauche = board[pos[0]-1][pos[1]-1] == 0 or board[pos[0]-1][pos[1]-1] == 2
+        if move_dia_gauche == True:
+            liste.append([(pos[0]-1, pos[1]-1), board[pos[0]-1][pos[1]-1]])
+            board[pos[0]-1][pos[1]-1] = 3
+    if is_in_board(board, (pos[0]-1,pos[1]+1)):
+        move_dia_droit = board[pos[0]-1][pos[1]+1] == 0 or board[pos[0]-1][pos[1]+1] == 2
+        if move_dia_droit == True:
+            liste.append([(pos[0]-1, pos[1]+1), board[pos[0]-1][pos[1]+1]])
+            board[pos[0]-1][pos[1]+1] = 3
+    print_board(board)
+    verificateur = False 
+    choix_pos = None
+    while verificateur == False:
+        choix = input("entrer votre destination : ")
+        choix_pos = extract_pos(len(board), choix)
+        for i in liste:
+            if choix_pos in i:
+                verificateur = True
+    for elem in liste:
+        pos = elem[0]
+        post_pos = elem[1]
+        board[pos[0]][pos[1]] = post_pos
+    return choix_pos
+
+def play_move(board, move, player):
+    """Execute le mouvement sur le plateau"""
+    print(move)
+    if player == 1:
+        board[move[0][0]][move[0][1]] = 0 # Position de départ des pion blanc
+        board[move[1][0]][move[1][1]] = 1 # Position d'arriver des pion blanc
+    else:
+        board[move[0][0]][move[0][1]] = 0 # Position de départ des pion noir
+        board[move[1][0]][move[1][1]] = 2 # Position d'arriver des pion noir
 
 def lancer_jeu(file):
     """
@@ -290,9 +336,24 @@ def lancer_jeu(file):
     """
     board = init_board(file)
     print_board(board)
-    pos = ai_select_peg(board, 2)
-    ai_move(board, pos, 2)
-    print(input_select_peg(board, 1))
+    gagnat = None
+    compteur = 0
+    while gagnat == None:
+        player = (compteur % 2) + 1
+        if player == 2:
+            pos = ai_select_peg(board, 2)
+            arriver = ai_move(board, pos, 2)[1]
+        else:
+            pos = input_select_peg(board, 1)
+            arriver = pos_arriver(board, pos)
+        play_move(board, (pos, arriver), player)
+        print_board(board)
+        gagnant = winner(board) # Permet de savoir si il y a un gagnant ou non
+        compteur += 1
+    if gagnant == 1: # Permet de savoir qui est le gagnant si il y n'a un
+        print("Victoire des blancs")
+    else:
+        print("Victoire des noirs")
 
 
 def main():
@@ -311,7 +372,7 @@ def main():
         if os.path.isfile(argument[2]) == True:
             lancer_jeu(argument[2])
         else:
-            pass
+            pass...
         print("trop d'argument")
 #py -m pytest test_partie2.py -vv
 
