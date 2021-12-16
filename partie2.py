@@ -1,3 +1,13 @@
+"""
+Auteur : Traore Amara
+matricule : 000542150
+section : BA1-info 
+Date : 13/1é/21
+Usage : jeu du Breakthrough  
+Entrer : i(haut) ,j(gauche) ,k(bas) , l(droite), y(confirmafion du pion choisie)  
+Sortie : plateau de jeu avec les différents mouvement des joueurs
+"""
+
 import os, sys
 from random import choice
 
@@ -11,7 +21,6 @@ def winner(board):
     else:
         gagnat = None # Cas ou il n'y a pas de gagnat ou pas encore(partie pas encore terminé)
     return gagnat
-
 
 def extract_pos(n, str_pos):
     """Traduit le coup rentrer en input en coordonné ligne colone pour la matrice"""
@@ -69,7 +78,6 @@ def init_board(file):
             matrice[pos[0]][pos[1]] = 2
     return matrice
         
-    
 def print_board(board):
     """Affiche la matrice dans le terminal"""
     m = len(board) # Longeur de la matrice(plateau)
@@ -170,7 +178,7 @@ def ai_move(board, pos, player):
     if is_in_board(board, (pos[0]+1,pos[1]-1)):
         if 0 <= move_2[0] <= len(board) and 0 <= move_2[1] <= len(board):
             coup_dia_g = board[move_2[0]][move_2[1]] != player
-    if is_in_board(board, (pos[0]+1,pos[1]-1)):
+    if is_in_board(board, (pos[0]+1,pos[1]+1)):
         if 0 <= move_3[0] <= len(board) and 0 <= move_3[1] <= len(board):
             coup_dia_d = board[move_3[0]][move_3[1]] != player
     if coup_avant == True:
@@ -305,7 +313,7 @@ def pos_arriver(board, pos):
         if move_dia_droit == True:
             liste.append([(pos[0]-1, pos[1]+1), board[pos[0]-1][pos[1]+1]])
             board[pos[0]-1][pos[1]+1] = 3
-    print_board(board)
+    #print_board(board)
     verificateur = False 
     choix_pos = None
     while verificateur == False:
@@ -330,30 +338,31 @@ def play_move(board, move, player):
         board[move[0][0]][move[0][1]] = 0 # Position de départ des pion noir
         board[move[1][0]][move[1][1]] = 2 # Position d'arriver des pion noir
 
-def lancer_jeu(file):
+def lancer_jeu(file, chiffre):
     """
     
     """
     board = init_board(file)
     print_board(board)
-    gagnat = None
+    gagnant = None
     compteur = 0
-    while gagnat == None:
+    while gagnant == None:
         player = (compteur % 2) + 1
-        if player == 2:
-            pos = ai_select_peg(board, 2)
-            arriver = ai_move(board, pos, 2)[1]
+        if chiffre == 0 or chiffre == 1:
+            if player == 2:
+                pos = ai_select_peg(board, 2)
+                arriver = ai_move(board, pos, 2)[1]
+            else:
+                pos = input_select_peg(board, 1)
+                arriver = pos_arriver(board, pos)
+            play_move(board, (pos, arriver), player)
+            print_board(board)
+            gagnant = winner(board) # Permet de savoir si il y a un gagnant ou non
+            compteur += 1
+        if gagnant == 1:
+            print("Victoire des blancs")
         else:
-            pos = input_select_peg(board, 1)
-            arriver = pos_arriver(board, pos)
-        play_move(board, (pos, arriver), player)
-        print_board(board)
-        gagnant = winner(board) # Permet de savoir si il y a un gagnant ou non
-        compteur += 1
-    if gagnant == 1: # Permet de savoir qui est le gagnant si il y n'a un
-        print("Victoire des blancs")
-    else:
-        print("Victoire des noirs")
+            print("Victoire des noirs")
 
 
 def main():
@@ -362,19 +371,26 @@ def main():
     """
     argument = sys.argv
     if len(argument) == 1:
-        lancer_jeu(7)
+        lancer_jeu(7, 0)
     elif len(argument) == 2:  
         if os.path.isfile(argument[1]) == True:
-            lancer_jeu(argument[1])
+            lancer_jeu(argument[1], 1)
         else:
             print("mauvais non de fichier")
     elif len(argument) == 3:
         if os.path.isfile(argument[2]) == True:
-            lancer_jeu(argument[2])
+            lancer_jeu(argument[2], 2)
         else:
-            pass...
+            pass
         print("trop d'argument")
 #py -m pytest test_partie2.py -vv
-
+"""
+encore à faire:
+- faire en sorte de ne pas jouer contre l'ia 
+    quand on ne le demande pas 
+- faire en sorte que l'ia mange (check) 
+- faire de l'optie 
+- mettre les commentaire 
+"""
 if __name__ == "__main__":
     main()
