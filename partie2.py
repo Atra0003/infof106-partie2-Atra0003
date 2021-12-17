@@ -14,9 +14,9 @@ from random import choice
 def winner(board):
     """Vérifie si l'un des deux joueur à gagné la partie"""
     n = len(board)
-    if 1 in board[0]: # Cas ou les blancs gagne
+    if 1 in board[0] or 3 in board[0]: # Cas ou les blancs gagne
         gagnat = 1
-    elif 2 in board[n-1]: # Cas ou les noirs gagne 
+    elif 2 in board[n-1] or 3 in board[n-1]: # Cas ou les noirs gagne 
         gagnat = 2
     else:
         gagnat = None # Cas ou il n'y a pas de gagnat ou pas encore(partie pas encore terminé)
@@ -97,6 +97,8 @@ def print_board(board):
                 print(".", end=" ")
             elif board[i][j] == 3:
                 print("#", end=" ")
+            elif board[i][j] == 4:
+                print("@", end=" ")
             else: # Placement des pions noir 
                 print("B", end=" ")
         print("|")
@@ -321,44 +323,46 @@ def pos_arriver(board, pos, player):
         if move_dia_droit == True:
             liste.append([(coup_d_d[0], coup_d_d[1]), board[coup_d_d[0]][coup_d_d[1]]])
             board[coup_d_d[0]][coup_d_d[1]] = 3
-    print_board(board)
-    verificateur = False 
-    choix_pos = None
-    while verificateur == False:
-        choix = input("entrer votre destination : ")
-        choix_pos = extract_pos(len(board), choix)
-        for i in liste:
-            if choix_pos in i:
-                verificateur = True
-    for elem in liste:
-        pos = elem[0]
-        post_pos = elem[1]
-        board[pos[0]][pos[1]] = post_pos
+
+    choix_pos = select_pos_arriver(board, liste, pos, player)
     return choix_pos
-"""
-def select_pos_arriver(board, liste, player):
+
+def select_pos_arriver(board, liste, pos, player):
+    liste.sort()
+    liste_index_one = liste[0][0]
+    board[liste_index_one[0]][liste_index_one[1]] = 4
+    print_board(board)
     choix = input("selectionner votre position d'arriver : ")
+    res = liste[0][0]
+    cpt = 0
     while choix != "y":
         #deplacement droite (l)
-        board[res[0]][res[1]] = player
         if choix == "l":
-            cpt = 1
-            while board[res[0]][(res[1]+cpt) % len(liste)] != player:
-                cpt += 1
-            board[res[0]][(res[1]+cpt) % len(board[0])] = 3
-            res = res[0], (res[1] + cpt ) % len(board[0])
+            cpt = cpt + 1
+            new_index_pos = cpt % len(liste)
+            ele = liste[new_index_pos][0]
+            board[res[0]][res[1]] = 3
+            board[ele[0]][ele[1]] = 4
+            res = (ele[0], ele[1])
             
         #deplacement gauche (j)
         if choix == "j":
-            cpt = 1
-            while board[res[0]][(res[1]-cpt) % len(liste)] != player:
-                cpt -= 1
-            board[res[0]][(res[1]-cpt) % len(board[0])] = 3
-            res = res[0], (res[1] - cpt) % len(board[0])
-        choix = input("entrer votre deplacement : ")
+            cpt = cpt - 1 
+            new_index_pos = cpt % len(liste)
+            ele = liste[new_index_pos][0]
+            board[res[0]][res[1]] = 3
+            board[ele[0]][ele[1]] = 4
+            res = (ele[0], ele[1])
+        print_board(board)
+        choix = input("selectionner votre position d'arriver : ")
+    for elem in liste:
+        position = elem[0]
+        if position == res:
+            pass 
+        else:
+            post_pos = elem[1]
+            board[position[0]][position[1]] = post_pos
     return res
-"""
-
 
 
 def play_move(board, move, player):
@@ -400,7 +404,6 @@ def lancer_jeu(file, num):
     else:
         print("Victoire des noirs")
         
-        
 def main():
     """
     Vérifie qu'il n'y a pas un fichier board 
@@ -415,7 +418,7 @@ def main():
             print("mauvais non de fichier")
     elif len(argument) == 3:
         if os.path.isfile(argument[2]) == True:
-            lancer_jeu(argument[2], 2)
+            lancer_jeu(argument[1], 2)
         else:
             pass
         print("trop d'argument")
