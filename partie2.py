@@ -22,6 +22,7 @@ def winner(board):
         gagnat = None # Cas ou il n'y a pas de gagnat ou pas encore(partie pas encore terminé)
     return gagnat
 
+
 def extract_pos(n, str_pos):
     """Traduit le coup rentrer en input en coordonné ligne colone pour la matrice"""
     cpt = 1 
@@ -78,6 +79,7 @@ def init_board(file):
             matrice[pos[0]][pos[1]] = 2
     return matrice
         
+    
 def print_board(board):
     """Affiche la matrice dans le terminal"""
     m = len(board) # Longeur de la matrice(plateau)
@@ -178,7 +180,7 @@ def ai_move(board, pos, player):
     if is_in_board(board, (pos[0]+1,pos[1]-1)):
         if 0 <= move_2[0] <= len(board) and 0 <= move_2[1] <= len(board):
             coup_dia_g = board[move_2[0]][move_2[1]] != player
-    if is_in_board(board, (pos[0]+1,pos[1]+1)):
+    if is_in_board(board, (pos[0]+1,pos[1]-1)):
         if 0 <= move_3[0] <= len(board) and 0 <= move_3[1] <= len(board):
             coup_dia_d = board[move_3[0]][move_3[1]] != player
     if coup_avant == True:
@@ -295,25 +297,31 @@ def input_select_peg(board, player):
     board[res[0]][res[1]] = player
     return res
 
-def pos_arriver(board, pos):
+def pos_arriver(board, pos, player):
     liste =[]
     move_avant, move_dia_gauche, move_dia_droit = False, False, False
-    if is_in_board(board, (pos[0]-1,pos[1])):
-        move_avant = board[pos[0]-1][pos[1]] == 0 
+
+    if player == 2:
+        coup_a, coup_d_g, coup_d_d = (pos[0]+1,pos[1]), (pos[0]+1,pos[1]+1), (pos[0]+1,pos[1]-1)
+    else:
+        coup_a, coup_d_g, coup_d_d = (pos[0]-1,pos[1]), (pos[0]-1,pos[1]-1), (pos[0]-1,pos[1]+1)
+
+    if is_in_board(board, (coup_a[0],coup_a[1])):
+        move_avant = board[coup_a[0]][coup_a[1]] == 0 
         if move_avant == True:
-            liste.append([(pos[0]-1, pos[1]), board[pos[0]-1][pos[1]]])
-            board[pos[0]-1][pos[1]] = 3
-    if is_in_board(board, (pos[0]-1,pos[1]-1)):
-        move_dia_gauche = board[pos[0]-1][pos[1]-1] == 0 or board[pos[0]-1][pos[1]-1] == 2
+            liste.append([(coup_a[0], coup_a[1]), board[coup_a[0]][coup_a[1]]])
+            board[coup_a[0]][coup_a[1]] = 3
+    if is_in_board(board, (coup_d_g[0],coup_d_g[1])):
+        move_dia_gauche = board[coup_d_g[0]][coup_d_g[1]] == 0 or board[coup_d_g[0]][coup_d_g[1]] != player
         if move_dia_gauche == True:
-            liste.append([(pos[0]-1, pos[1]-1), board[pos[0]-1][pos[1]-1]])
-            board[pos[0]-1][pos[1]-1] = 3
-    if is_in_board(board, (pos[0]-1,pos[1]+1)):
-        move_dia_droit = board[pos[0]-1][pos[1]+1] == 0 or board[pos[0]-1][pos[1]+1] == 2
+            liste.append([(coup_d_g[0], coup_d_g[1]), board[coup_d_g[0]][coup_d_g[1]]])
+            board[coup_d_g[0]][coup_d_g[1]] = 3
+    if is_in_board(board, (coup_d_d[0],coup_d_d[1])):
+        move_dia_droit = board[coup_d_d[0]][coup_d_d[1]] == 0 or board[coup_d_d[0]][coup_d_d[1]] != player
         if move_dia_droit == True:
-            liste.append([(pos[0]-1, pos[1]+1), board[pos[0]-1][pos[1]+1]])
-            board[pos[0]-1][pos[1]+1] = 3
-    #print_board(board)
+            liste.append([(coup_d_d[0], coup_d_d[1]), board[coup_d_d[0]][coup_d_d[1]]])
+            board[coup_d_d[0]][coup_d_d[1]] = 3
+    print_board(board)
     verificateur = False 
     choix_pos = None
     while verificateur == False:
@@ -327,6 +335,31 @@ def pos_arriver(board, pos):
         post_pos = elem[1]
         board[pos[0]][pos[1]] = post_pos
     return choix_pos
+"""
+def select_pos_arriver(board, liste, player):
+    choix = input("selectionner votre position d'arriver : ")
+    while choix != "y":
+        #deplacement droite (l)
+        board[res[0]][res[1]] = player
+        if choix == "l":
+            cpt = 1
+            while board[res[0]][(res[1]+cpt) % len(liste)] != player:
+                cpt += 1
+            board[res[0]][(res[1]+cpt) % len(board[0])] = 3
+            res = res[0], (res[1] + cpt ) % len(board[0])
+            
+        #deplacement gauche (j)
+        if choix == "j":
+            cpt = 1
+            while board[res[0]][(res[1]-cpt) % len(liste)] != player:
+                cpt -= 1
+            board[res[0]][(res[1]-cpt) % len(board[0])] = 3
+            res = res[0], (res[1] - cpt) % len(board[0])
+        choix = input("entrer votre deplacement : ")
+    return res
+"""
+
+
 
 def play_move(board, move, player):
     """Execute le mouvement sur le plateau"""
@@ -338,33 +371,36 @@ def play_move(board, move, player):
         board[move[0][0]][move[0][1]] = 0 # Position de départ des pion noir
         board[move[1][0]][move[1][1]] = 2 # Position d'arriver des pion noir
 
-def lancer_jeu(file, chiffre):
+def lancer_jeu(file, num):
     """
     
     """
     board = init_board(file)
     print_board(board)
-    gagnant = None
+    gagnat = None
     compteur = 0
-    while gagnant == None:
+    while gagnat == None:
         player = (compteur % 2) + 1
-        if chiffre == 0 or chiffre == 1:
-            if player == 2:
+        if player == 2:
+            if num == 0 or num == 1:
+                pos = input_select_peg(board, 2)
+                arriver = pos_arriver(board, pos, player)
+            if num == 2:
                 pos = ai_select_peg(board, 2)
-                arriver = ai_move(board, pos, 2)[1]
-            else:
-                pos = input_select_peg(board, 1)
-                arriver = pos_arriver(board, pos)
-            play_move(board, (pos, arriver), player)
-            print_board(board)
-            gagnant = winner(board) # Permet de savoir si il y a un gagnant ou non
-            compteur += 1
-        if gagnant == 1:
-            print("Victoire des blancs")
+                arriver = ai_move(board, pos, player)[1]
         else:
-            print("Victoire des noirs")
-
-
+            pos = input_select_peg(board, 1)
+            arriver = pos_arriver(board, pos, player)
+        play_move(board, (pos, arriver), player)
+        print_board(board)
+        gagnant = winner(board) # Permet de savoir si il y a un gagnant ou non
+        compteur += 1
+    if gagnant == 1: # Permet de savoir qui est le gagnant si il y n'a un
+        print("Victoire des blancs")
+    else:
+        print("Victoire des noirs")
+        
+        
 def main():
     """
     Vérifie qu'il n'y a pas un fichier board 
@@ -385,12 +421,8 @@ def main():
         print("trop d'argument")
 #py -m pytest test_partie2.py -vv
 """
-encore à faire:
-- faire en sorte de ne pas jouer contre l'ia 
-    quand on ne le demande pas 
-- faire en sorte que l'ia mange (check) 
-- faire de l'optie 
-- mettre les commentaire 
+-selectioner la pos d'arriver avec i,j
+-dire gagner quannd l'un des joueur gagne 
 """
 if __name__ == "__main__":
     main()
