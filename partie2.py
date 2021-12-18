@@ -14,17 +14,19 @@ from random import choice
 def winner(board):
     """Vérifie si l'un des deux joueur à gagné la partie"""
     n = len(board)
-    if 1 in board[0] or 3 in board[0]: # Cas ou les blancs gagne
+    if 1 in board[0]: # Cas ou les blancs gagne
         gagnat = 1
-    elif 2 in board[n-1] or 3 in board[n-1]: # Cas ou les noirs gagne 
+    elif 2 in board[n-1]: # Cas ou les noirs gagne 
         gagnat = 2
     else:
         gagnat = None # Cas ou il n'y a pas de gagnat ou pas encore(partie pas encore terminé)
     return gagnat
 
-
 def extract_pos(n, str_pos):
-    """Traduit le coup rentrer en input en coordonné ligne colone pour la matrice"""
+    """
+    Traduit les positions des pions enregistré dans le fichier
+    texte en position de matrice
+    """
     cpt = 1 
     capital = "a"
     while capital != str_pos[0]:
@@ -35,9 +37,11 @@ def extract_pos(n, str_pos):
     return (ligne, colonne)
 
 def init_board(file):
-    """Création de la matrice de taille n*n"""
+    """
+    Permet de créer la matrice
+    """
     matrice = []
-    if type(file) == int or file == None:
+    if type(file) == int or file == None: # Plateau par defaut (7 * 7)
         n = 7
         matrice = []
         for plateau in range(n):
@@ -50,7 +54,7 @@ def init_board(file):
                 else: # Placement des case vide 
                     el.append(0)
             matrice.append(el)
-    else:
+    else: # Cas ou la taille du plateau est donner par un fichier texte 
         fichier = open(file, encoding="utf-8")
         lignes = fichier.readlines()
         nb_ligne = len(lignes)
@@ -95,11 +99,11 @@ def print_board(board):
                 print("W", end=" ")
             elif board[i][j] == 0: # Cas ou il n'y a pas de pion à cette position là en début de partie 
                 print(".", end=" ")
-            elif board[i][j] == 3:
+            elif board[i][j] == 3: # Marque que le pion peu être sellectionner ou marque les position d'arriver du pion selectionner 
                 print("#", end=" ")
-            elif board[i][j] == 4:
+            elif board[i][j] == 4: # Marque la position d'arriver 
                 print("@", end=" ")
-            else: # Placement des pions noir 
+            else: # Placement des piont noir 
                 print("B", end=" ")
         print("|")
     print(" "*5 + n*"— ")
@@ -110,23 +114,24 @@ def print_board(board):
 
 def ai_select_peg(board, player):
     """
-    l'ia selectionne un pion à jouer 
+    L'ia selectionne le pion le plus proche de 
+    la victoire et qui est capable de bouger capable bouger
     """
     if player == 1:
-        DEBUT, FIN, PAS = 0, len(board), 1
+        DEBUT, FIN, PAS = 0, len(board), 1 # Cas ou l'ai serait les blancs
     else:
-        DEBUT, FIN, PAS = len(board)-1, 0, -1
+        DEBUT, FIN, PAS = len(board)-1, 0, -1 # Cas ou l'ai serait les noirs  
     verificateur = 0
     pion = []
     for i in range(DEBUT, FIN, PAS):
         for j in range(len(board[0])):
             if board[i][j] == player:
-                jouable = jouabilite(board, (i, j), player)
+                jouable = jouabilite(board, (i, j), player) #vérifie si le pion est jouable (boujeable)
                 if jouable == True:
-                    pion.append((i, j))
-                    verificateur = 1
+                    pion.append((i, j)) # Liste contenant tout les pion d'une même ligne
+                    verificateur = 1 # Permet de return le premier pion jouable
         if len(pion) != 0:
-            res = choice(pion)
+            res = choice(pion) # Choisie un pion de manière alèatoire quand plusieur pion son sur la même ligne
         else:
             pass 
         if verificateur == 1:
@@ -146,45 +151,49 @@ def is_in_board(board, t):
     
 def jouabilite(plateau, t, player):
     """
-    Permet de savoir si le pion sélectionner est cappablae de bouger 
+    Renvoie vrai ou faux en fonction de si le 
+    pion sélectionner est cappablae de bouger 
     """
-    move_avant, move_dia_gauche, move_dia_droit = False, False, False
-    if player == 2:
+    move_avant, move_dia_gauche, move_dia_droit = False, False, False # Initialise tout les mouvement de pion a faux 
+    if player == 2: # Joueur 2 
         if is_in_board(plateau, (t[0]+1, t[1])):
-            move_avant = plateau[t[0]+1][t[1]] == 0
+            move_avant = plateau[t[0]+1][t[1]] == 0 # Met le move_avant à vrai si les position donné à is_in_board son prèsent dans la matrice et que celle-ci est vide (0) 
         if is_in_board(plateau, (t[0]+1, t[1]-1)):
-            move_dia_gauche = plateau[t[0]+1][t[1]-1] == 0 or plateau[t[0]+1][t[1]-1] == 1
+            move_dia_gauche = plateau[t[0]+1][t[1]-1] == 0 or plateau[t[0]+1][t[1]-1] == 1 # Met le move_dia_gauche à vrai si les position donné à is_in_board son prèsent dans la matrice et que celle-ci est vide (0) ou occupé par l'adversaire (1)
         if is_in_board(plateau, (t[0]+1, t[1]+1)):
-            move_dia_droit = plateau[t[0]+1][t[1]+1] == 0 or plateau[t[0]+1][t[1]+1] == 1
-    else:
+            move_dia_droit = plateau[t[0]+1][t[1]+1] == 0 or plateau[t[0]+1][t[1]+1] == 1 # Met le move_dia_droit à vrai si les position donné à is_in_board son prèsent dans la matrice et que celle-ci est vide (0) ou occupé par l'adversaire (1)
+    else: # Joueur 1 
         if is_in_board(plateau, (t[0]-1, t[1])):
-            move_avant = plateau[t[0]-1][t[1]] == 0
+            move_avant = plateau[t[0]-1][t[1]] == 0 # Met le move_avant à vrai si les position donné à is_in_board son prèsent dans la matrice et que celle-ci est vide (0) 
         if is_in_board(plateau, (t[0]-1, t[1]-1)):
-            move_dia_gauche = plateau[t[0]-1][t[1]-1] == 0 or plateau[t[0]-1][t[1]-1] == 2
+            move_dia_gauche = plateau[t[0]-1][t[1]-1] == 0 or plateau[t[0]-1][t[1]-1] == 2 # Met le move_dia_gauche à vrai si les position donné à is_in_board son prèsent dans la matrice et que celle-ci est vide (0) ou occupé par l'adversaire (2)
         if is_in_board(plateau, (t[0]-1, t[1]+1)):
-            move_dia_droit = plateau[t[0]-1][t[1]+1] == 0 or plateau[t[0]-1][t[1]+1] == 2
+            move_dia_droit = plateau[t[0]-1][t[1]+1] == 0 or plateau[t[0]-1][t[1]+1] == 2 # Met le move_dia_droit à vrai si les position donné à is_in_board son prèsent dans la matrice et que celle-ci est vide (0) ou occupé par l'adversaire (2)
     res = move_avant or move_dia_gauche or move_dia_droit
     return res 
 
 def ai_move(board, pos, player):
     """
-    sélectionne de manière aléatiore la position d'arriver du pion appartenant à l'ia 
+    Sélectionne de manière aléatiore la position 
+    d'arriver du pion choisie dans ai_select_peg
+    et return la position de dépard et d'arriver du pion
     """
     liste_ia_move = []
-    if player == 2:
+    if player == 2: # Cas ou l'ia serait le oueur 2 
         move_1, move_2, move_3 = (pos[0]+1,pos[1]), (pos[0]+1,pos[1]+1), (pos[0]+1,pos[1]-1)
-    else:
+    else: # Cas ou l'ia serait le oueur 1
         move_1, move_2, move_3 = (pos[0]-1,pos[1]), (pos[0]-1,pos[1]-1), (pos[0]-1,pos[1]+1)
 
-    coup_avant, coup_dia_d, coup_dia_g = False, False, False
+    coup_avant, coup_dia_d, coup_dia_g = False, False, False # Initialise tout les mouvement de pion a faux
     if 0 <= move_1[0] <= len(board) and 0 <= move_1[1] <= len(board):
-        coup_avant = board[move_1[0]][move_1[1]] == 0
+        coup_avant = board[move_1[0]][move_1[1]] == 0 # Check que la case devant le pion choisie soit jouable
     if is_in_board(board, (pos[0]+1,pos[1]-1)):
         if 0 <= move_2[0] <= len(board) and 0 <= move_2[1] <= len(board):
-            coup_dia_g = board[move_2[0]][move_2[1]] != player
+            coup_dia_g = board[move_2[0]][move_2[1]] != player # check que la case en diagonale gauche soit différent de un de c'est pion  
     if is_in_board(board, (pos[0]+1,pos[1]-1)):
         if 0 <= move_3[0] <= len(board) and 0 <= move_3[1] <= len(board):
-            coup_dia_d = board[move_3[0]][move_3[1]] != player
+            coup_dia_d = board[move_3[0]][move_3[1]] != player # check que la case en diagonale droit soit différent de un de c'est pion
+    #Liste contenant tout les positions jouable 
     if coup_avant == True:
         liste_ia_move.append(move_1)
     if coup_dia_d == True:
@@ -195,18 +204,18 @@ def ai_move(board, pos, player):
 
 def select_peg_pion(board, player, DEBUT, FIN, PAS):
     """
-    sélectionne le pion le plus proche de la victoire 
+    Sélectionne le pion le plus proche de la victoire (joueur)
     """
     for i in range(DEBUT, FIN, PAS):
         for j in range(len(board[0])):
             if board[i][j] == player:
-                jouable = jouabilite(board, (i, j), player)
+                jouable = jouabilite(board, (i, j), player) # check si le pion est jouable (bougeable)
                 if jouable == True:
                     return i, j
 
 def reverse_manhattan(liste, pos, choix):
     """
-    renvoie la position du pion potentiellement sélectionner 
+    Renvoie la position du pion potentiellement sélectionner 
     """
     cpt = 0
     controle = 0
@@ -214,51 +223,61 @@ def reverse_manhattan(liste, pos, choix):
         for j in i:
             if controle == 0:
                 if pos == j[1]:
-                    index_pos = cpt
+                    index_pos = cpt # Permet de trouver l'indice de la sous liste dans laquel se trouve le pion
                     controle = 1 
         cpt += 1
-    if choix == "i":
-        index_new_pos = (index_pos - 1) % len(liste)
-    else:
-        index_new_pos = (index_pos + 1) % len(liste)
-    plus_proche = liste[index_new_pos][0]
+    if choix == "i": # Mouvement vers le haut 
+        index_new_pos = (index_pos - 1) % len(liste) # Donne l'indice de la prochaine sous liste dans laquel on doit chercher le prochain pion
+    else: # Mouvement vers le bas 
+        index_new_pos = (index_pos + 1) % len(liste) # Donne l'indice de la prochaine sous liste dans laquel on doit chercher le prochain pion
+    plus_proche = liste[index_new_pos][0] 
     for i in liste[index_new_pos]:
         if i[0] < plus_proche[0]:
-            plus_proche = i
+            plus_proche = i # Nous donne le pion le plus proche du pion potentiellement sélectionner
     return plus_proche[1]
 
 def input_select_peg(board, player):
     """
     Renvoie la position du pion sélectionner 
     """
-    if player == 1:
+    if player == 1: # Joueur 1 
         DEBUT, FIN, PAS = 0, len(board), 1
-    else:
+    else: # joueur 2 
         DEBUT, FIN, PAS = len(board)-1, 0, -1
-    pion_select = select_peg_pion(board, player, DEBUT, FIN, PAS)
-    board[pion_select[0]][pion_select[1]] = 3
+    pion_select = select_peg_pion(board, player, DEBUT, FIN, PAS) # Donne la position du pion le plus proche de la victoire 
+    board[pion_select[0]][pion_select[1]] = 3 # Change le pion le plus proche de la victoire en "#" pour pouvoir le repèrer
     print_board(board)
 
     # Cas ou le joueur veux choisir un autre pion
-    choix = input("entrer votre deplacement : ")
+    print("Le y pour selectionner")
+    print("Le l pour aller à droite")
+    print("Le j pour aller à gauche")
+    print("Le i pour aller à en haut")
+    print("Le k pour aller à en bas")
+    choix = input("Voulez vous sélectionner se pion : ")
     res = pion_select[:]
     while choix != "y":
+        print("Le y pour selectionner")
+        print("Le l pour aller à droite")
+        print("Le j pour aller à gauche")
+        print("Le i pour aller à en haut")
+        print("Le k pour aller à en bas")
         #deplacement droite (l)
         board[res[0]][res[1]] = player
         if choix == "l":
             cpt = 1
             while board[res[0]][(res[1]+cpt) % len(board[0])] != player:
                 cpt += 1
-            board[res[0]][(res[1]+cpt) % len(board[0])] = 3
-            res = res[0], (res[1] + cpt ) % len(board[0])
+            board[res[0]][(res[1]+cpt) % len(board[0])] = 3 # Change le nouveau pion selectionner en "#" 
+            res = res[0], (res[1] + cpt ) % len(board[0]) # Position du nouveau pion potentielement selectionner
             
         #deplacement gauche (j)
         if choix == "j":
             cpt = 1
             while board[res[0]][(res[1]-cpt) % len(board[0])] != player:
                 cpt -= 1
-            board[res[0]][(res[1]-cpt) % len(board[0])] = 3
-            res = res[0], (res[1] - cpt) % len(board[0])
+            board[res[0]][(res[1]-cpt) % len(board[0])] = 3 # Change le nouveau pion selectionner en "#" 
+            res = res[0], (res[1] - cpt) % len(board[0]) # Position du nouveau pion potentielement selectionner
            
         #deplacement haut (i)
         if choix == "i":
@@ -269,13 +288,13 @@ def input_select_peg(board, player):
                     if (board[i][j] == player or board[i][j] == 3):
                         if jouabilite(board, (i,j), 1) == True:
                             pos_arriver = (i , j)
-                            d_m = abs(pos_arriver[0] - res[0]) + abs(pos_arriver[1] - res[1])
+                            d_m = abs(pos_arriver[0] - res[0]) + abs(pos_arriver[1] - res[1]) # calcul la distance manhattan
                             liste_vertical_2.append((d_m ,(i, j)))
                 if len(liste_vertical_2) > 0:
                     liste_vertical_1.append(liste_vertical_2)
             manhattan = reverse_manhattan(liste_vertical_1, res, "i")
-            board[manhattan[0]][manhattan[1]] = 3
-            res = manhattan
+            board[manhattan[0]][manhattan[1]] = 3 # Change le nouveau pion selectionner en "#" 
+            res = manhattan # Position du nouveau pion potentielement selectionner
 
         #deplacement bas (k)
         if choix == "k":
@@ -286,87 +305,96 @@ def input_select_peg(board, player):
                     if (board[i][j] == player or board[i][j] == 3):
                         if jouabilite(board,(i, j), 1) == True:
                             pos_arriver = (i , j)
-                            d_m = abs(pos_arriver[0] - res[0]) + abs(pos_arriver[1] - res[1])
+                            d_m = abs(pos_arriver[0] - res[0]) + abs(pos_arriver[1] - res[1]) # calcul la distance manhattan
                             liste_vertical_2.append((d_m, (i, j)))
                 if len(liste_vertical_2) > 0:
                     liste_vertical_1.append(liste_vertical_2)
             manhattan = reverse_manhattan(liste_vertical_1, res,"k")
-            board[manhattan[0]][manhattan[1]] = 3
-            res = manhattan
-        print_board(board)
-        board[res[0]][res[1]] = player
+            board[manhattan[0]][manhattan[1]] = 3 # Change le nouveau pion selectionner en "#" 
+            res = manhattan # Position du nouveau pion potentielement selectionner
+        print_board(board) # Affiche l'ètat actuel du plateau 
+        board[res[0]][res[1]] = player 
         choix = input("entrer votre deplacement : ")
-    board[res[0]][res[1]] = player
+    board[res[0]][res[1]] = player # Redonne l'encienne apparence de pion 
     return res
 
 def pos_arriver(board, pos, player):
-    liste =[]
-    move_avant, move_dia_gauche, move_dia_droit = False, False, False
-
-    if player == 2:
+    """
+    Renvoie la position d'arrive
+    quele joueur à choisie
+    """
+    liste =[] # Liste contenant les positions jouable du pion selectionner par le joueur 
+    move_avant, move_dia_gauche, move_dia_droit = False, False, False # Initialisation de tout les mouvement à faux 
+    if player == 2: # Joueur 2 
         coup_a, coup_d_g, coup_d_d = (pos[0]+1,pos[1]), (pos[0]+1,pos[1]+1), (pos[0]+1,pos[1]-1)
-    else:
+    else:  # Joueur 1 
         coup_a, coup_d_g, coup_d_d = (pos[0]-1,pos[1]), (pos[0]-1,pos[1]-1), (pos[0]-1,pos[1]+1)
 
-    if is_in_board(board, (coup_a[0],coup_a[1])):
+    if is_in_board(board, (coup_a[0],coup_a[1])): 
         move_avant = board[coup_a[0]][coup_a[1]] == 0 
         if move_avant == True:
-            liste.append([(coup_a[0], coup_a[1]), board[coup_a[0]][coup_a[1]]])
+            liste.append([(coup_a[0], coup_a[1]), board[coup_a[0]][coup_a[1]]]) # Met le move_avant dans la liste si sa position est prèsente dans la matrice et que la valeur de move_avant dans la matrice est 0
             board[coup_a[0]][coup_a[1]] = 3
     if is_in_board(board, (coup_d_g[0],coup_d_g[1])):
         move_dia_gauche = board[coup_d_g[0]][coup_d_g[1]] == 0 or board[coup_d_g[0]][coup_d_g[1]] != player
         if move_dia_gauche == True:
-            liste.append([(coup_d_g[0], coup_d_g[1]), board[coup_d_g[0]][coup_d_g[1]]])
+            liste.append([(coup_d_g[0], coup_d_g[1]), board[coup_d_g[0]][coup_d_g[1]]]) # Met le move_dia_g dans la liste si sa position est prèsente dans la matrice et que la valeur de move_dia_g dans la matrice est différent de elle même
             board[coup_d_g[0]][coup_d_g[1]] = 3
     if is_in_board(board, (coup_d_d[0],coup_d_d[1])):
         move_dia_droit = board[coup_d_d[0]][coup_d_d[1]] == 0 or board[coup_d_d[0]][coup_d_d[1]] != player
         if move_dia_droit == True:
-            liste.append([(coup_d_d[0], coup_d_d[1]), board[coup_d_d[0]][coup_d_d[1]]])
+            liste.append([(coup_d_d[0], coup_d_d[1]), board[coup_d_d[0]][coup_d_d[1]]]) # Met le move_dia_d dans la liste si sa position est prèsente dans la matrice et que la valeur de move_dia_d dans la matrice est différent de elle même
             board[coup_d_d[0]][coup_d_d[1]] = 3
-
-    choix_pos = select_pos_arriver(board, liste, pos, player)
+    choix_pos = select_pos_arriver(board, liste, pos, player) # Choix de la position parmit les poosition dans la liste 
     return choix_pos
 
 def select_pos_arriver(board, liste, pos, player):
-    liste.sort()
-    liste_index_one = liste[0][0]
-    board[liste_index_one[0]][liste_index_one[1]] = 4
-    print_board(board)
+    liste.sort() # Trie la liste de position 
+    liste_index_one = liste[0][0] # Donne le premier tuple de la liste 
+    board[liste_index_one[0]][liste_index_one[1]] = 4 # Transforme la première position présent dans la liste en "@" 
+    print_board(board) # Affiche l'état actuel dans plateau 
+    print("Le y pour selectionner")
+    print("Le l pour aller à droite")
+    print("Le j pour aller à gauche")
     choix = input("selectionner votre position d'arriver : ")
-    res = liste[0][0]
+    res = liste[0][0] # Position du pion 
     cpt = 0
     while choix != "y":
-        #deplacement droite (l)
+        print("Le y pour selectionner")
+        print("Le l pour aller à droite")
+        print("Le j pour aller à gauche")
+        # Deplacement droite (l)
         if choix == "l":
             cpt = cpt + 1
-            new_index_pos = cpt % len(liste)
-            ele = liste[new_index_pos][0]
-            board[res[0]][res[1]] = 3
-            board[ele[0]][ele[1]] = 4
-            res = (ele[0], ele[1])
+            new_index_pos = cpt % len(liste) # Indice du nouveau potentiellement sélectionner
+            ele = liste[new_index_pos][0] # Position du nouveau potentiellement sélectionner 
+            board[res[0]][res[1]] = 3 # Redonne l'encienne valeur matriciel de la position du pion 
+            board[ele[0]][ele[1]] = 4 # Transforme la première position présent dans la liste en "@"
+            res = (ele[0], ele[1]) # Valeur de la position nouvellement choisie
             
         #deplacement gauche (j)
         if choix == "j":
             cpt = cpt - 1 
-            new_index_pos = cpt % len(liste)
-            ele = liste[new_index_pos][0]
-            board[res[0]][res[1]] = 3
-            board[ele[0]][ele[1]] = 4
-            res = (ele[0], ele[1])
-        print_board(board)
+            new_index_pos = cpt % len(liste) # Indice du nouveau potentiellement sélectionner
+            ele = liste[new_index_pos][0] # Position du nouveau potentiellement sélectionner 
+            board[res[0]][res[1]] = 3 # Redonne l'encienne valeur matriciel de la position du pion 
+            board[ele[0]][ele[1]] = 4 # Transforme la première position présent dans la liste en "@"
+            res = (ele[0], ele[1]) # Valeur de la position nouvellement choisie
+        print_board(board) # Affichage de l'état actuel de la matrice 
         choix = input("selectionner votre position d'arriver : ")
     for elem in liste:
         position = elem[0]
         if position == res:
             pass 
         else:
-            post_pos = elem[1]
-            board[position[0]][position[1]] = post_pos
+            post_pos = elem[1] 
+            board[position[0]][position[1]] = post_pos# Redonne l'encienne valeur matriciel de la position du pion non sélectionner 
     return res
 
-
 def play_move(board, move, player):
-    """Execute le mouvement sur le plateau"""
+    """
+    Execute le mouvement sur le plateau
+    """
     print(move)
     if player == 1:
         board[move[0][0]][move[0][1]] = 0 # Position de départ des pion blanc
@@ -377,55 +405,52 @@ def play_move(board, move, player):
 
 def lancer_jeu(file, num):
     """
-    
+    Lance la partie de jeu 
     """
-    board = init_board(file)
-    print_board(board)
-    gagnat = None
+    board = init_board(file) # Initialisation de la matrice 
+    print_board(board) # Afficher l'état initial du plateau (aucun n'a encore été jouer)
+    gagnant = None
     compteur = 0
-    while gagnat == None:
+    while gagnant == None: # Permet de stoper la partie quand il y a un gagant 
         player = (compteur % 2) + 1
-        if player == 2:
-            if num == 0 or num == 1:
+        if player == 2: # joueur 2 
+            if num == 0 or num == 1: # Le joueur 2 est un joueur 
                 pos = input_select_peg(board, 2)
                 arriver = pos_arriver(board, pos, player)
-            if num == 2:
+            if num == 2: # Le joueur 2 est un joueur
                 pos = ai_select_peg(board, 2)
                 arriver = ai_move(board, pos, player)[1]
-        else:
+        else: # Joueur 1 
             pos = input_select_peg(board, 1)
             arriver = pos_arriver(board, pos, player)
         play_move(board, (pos, arriver), player)
         print_board(board)
-        gagnant = winner(board) # Permet de savoir si il y a un gagnant ou non
         compteur += 1
-    if gagnant == 1: # Permet de savoir qui est le gagnant si il y n'a un
+        gagnant = winner(board) # Permet de savoir si il y a un gagnant ou non
+    if gagnant == 1 or gagnant == 3: # Permet de savoir qui est le gagnant si il y n'a un
         print("Victoire des blancs")
-    else:
+    if gagnant == 2 or gagnant == 3:
         print("Victoire des noirs")
         
 def main():
     """
-    Vérifie qu'il n'y a pas un fichier board 
+    Donne les paramètres de jeu
+    (taille du plateau, possibilité de jouer contre l'ia)
     """
     argument = sys.argv
-    if len(argument) == 1:
+    if len(argument) == 1: # Plateau par defaut, mode joueur contre joueur
         lancer_jeu(7, 0)
-    elif len(argument) == 2:  
+    elif len(argument) == 2: # Le plateau est donner par un fichier texte, mode joueur contre joueur 
         if os.path.isfile(argument[1]) == True:
             lancer_jeu(argument[1], 1)
         else:
             print("mauvais non de fichier")
-    elif len(argument) == 3:
+    elif len(argument) == 3: # Le plateau est donner par un fichier texte, joueur contre ia
         if os.path.isfile(argument[2]) == True:
             lancer_jeu(argument[1], 2)
         else:
             pass
         print("trop d'argument")
 #py -m pytest test_partie2.py -vv
-"""
--selectioner la pos d'arriver avec i,j
--dire gagner quannd l'un des joueur gagne 
-"""
 if __name__ == "__main__":
     main()
