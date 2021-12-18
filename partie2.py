@@ -2,8 +2,8 @@
 Auteur : Traore Amara
 matricule : 000542150
 section : BA1-info 
-Date : 13/1é/21
-Usage : jeu du Breakthrough  
+Date : 13/12/21
+Titre du jeu : jeu du Breakthrough  
 Entrer : i(haut) ,j(gauche) ,k(bas) , l(droite), y(confirmafion du pion choisie)  
 Sortie : plateau de jeu avec les différents mouvement des joueurs
 """
@@ -56,14 +56,14 @@ def init_board(file):
             matrice.append(el)
     else: # Cas ou la taille du plateau est donner par un fichier texte 
         fichier = open(file, encoding="utf-8")
-        lignes = fichier.readlines()
+        lignes = fichier.readlines() # Lecture ligne par ligne du fichier texte 
         nb_ligne = len(lignes)
         
         # Création de la matrice
         taille_plateau = lignes[0].strip("\n")
         taille_plateau = taille_plateau.split(" ")
-        n = int(taille_plateau[0])
-        m = int(taille_plateau[1])
+        n = int(taille_plateau[0]) # Nombre de ligne dans le plateau 
+        m = int(taille_plateau[1]) # Nombre de collone dans le plateau
         for matrice_1 in range(n):
             el = []
             for matrice_2 in range(m):
@@ -73,13 +73,13 @@ def init_board(file):
         # Positionnement des pions blanc 
         ligne2 = lignes[1].split(",")
         for pos_w in ligne2:
-            pos = extract_pos(n, pos_w)
+            pos = extract_pos(n, pos_w) # Convertie la position dans le fichier en position matriciel
             matrice[pos[0]][pos[1]] = 1
         
         # Positionnement des pions noir
         ligne2 = lignes[2].split(",")
         for pos_w in ligne2:
-            pos = extract_pos(n, pos_w)
+            pos = extract_pos(n, pos_w) # Convertie la position dans le fichier en position matriciel
             matrice[pos[0]][pos[1]] = 2
     return matrice
         
@@ -257,11 +257,6 @@ def input_select_peg(board, player):
     choix = input("Voulez vous sélectionner se pion : ")
     res = pion_select[:]
     while choix != "y":
-        print("Le y pour selectionner")
-        print("Le l pour aller à droite")
-        print("Le j pour aller à gauche")
-        print("Le i pour aller à en haut")
-        print("Le k pour aller à en bas")
         #deplacement droite (l)
         board[res[0]][res[1]] = player
         if choix == "l":
@@ -314,6 +309,11 @@ def input_select_peg(board, player):
             res = manhattan # Position du nouveau pion potentielement selectionner
         print_board(board) # Affiche l'ètat actuel du plateau 
         board[res[0]][res[1]] = player 
+        print("Le y pour selectionner")
+        print("Le l pour aller à droite")
+        print("Le j pour aller à gauche")
+        print("Le i pour aller à en haut")
+        print("Le k pour aller à en bas")
         choix = input("entrer votre deplacement : ")
     board[res[0]][res[1]] = player # Redonne l'encienne apparence de pion 
     return res
@@ -360,9 +360,6 @@ def select_pos_arriver(board, liste, pos, player):
     res = liste[0][0] # Position du pion 
     cpt = 0
     while choix != "y":
-        print("Le y pour selectionner")
-        print("Le l pour aller à droite")
-        print("Le j pour aller à gauche")
         # Deplacement droite (l)
         if choix == "l":
             cpt = cpt + 1
@@ -381,6 +378,9 @@ def select_pos_arriver(board, liste, pos, player):
             board[ele[0]][ele[1]] = 4 # Transforme la première position présent dans la liste en "@"
             res = (ele[0], ele[1]) # Valeur de la position nouvellement choisie
         print_board(board) # Affichage de l'état actuel de la matrice 
+        print("Le y pour selectionner")
+        print("Le l pour aller à droite")
+        print("Le j pour aller à gauche")
         choix = input("selectionner votre position d'arriver : ")
     for elem in liste:
         position = elem[0]
