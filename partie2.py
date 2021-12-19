@@ -252,7 +252,6 @@ def input_select_peg(board, player):
     print_board(board)
 
     # Cas ou le joueur veux choisir un autre pion
-    
     print("Le y pour selectionner")
     print("Le l pour aller à droite")
     print("Le j pour aller à gauche")
@@ -279,10 +278,12 @@ def input_select_peg(board, player):
         #deplacement bas (k)
         if choix == "k":
             res = deplacement_bas(board, res, player, DEBUT, FIN, PAS)
-            
-        print_board(board) # Affiche l'ètat actuel du plateau 
-        board[res[0]][res[1]] = player
         
+        if choix != "i" and choix != "j" and choix != "k" and choix != "l":
+            board[pion_select[0]][pion_select[1]] = 3
+            print_board(board)
+
+        print_board(board)
         print("Le y pour selectionner")
         print("Le l pour aller à droite")
         print("Le j pour aller à gauche")
@@ -394,8 +395,8 @@ def select_pos_arriver(board, liste):
     print("Le y pour selectionner")
     print("Le l pour aller à droite")
     print("Le j pour aller à gauche")
-    
     choix = input("selectionner votre position d'arriver : ")
+
     res = liste[0][0] # Position du pion 
     cpt = 0
     while choix != "y":
@@ -417,8 +418,8 @@ def select_pos_arriver(board, liste):
             board[res[0]][res[1]] = 3 # Redonne l'encienne valeur matriciel de la position du pion 
             board[ele[0]][ele[1]] = 4 # Transforme la première position présent dans la liste en "@"
             res = (ele[0], ele[1]) # Valeur de la position nouvellement choisie
+            
         print_board(board) # Affichage de l'état actuel de la matrice
-        
         print("Le y pour selectionner")
         print("Le l pour aller à droite")
         print("Le j pour aller à gauche")
