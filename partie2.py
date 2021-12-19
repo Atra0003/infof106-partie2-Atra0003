@@ -17,12 +17,12 @@ def winner(board):
     """
     n = len(board)
     if 1 in board[0]: # Cas ou les blancs gagne
-        gagnat = 1
+        gagnant = 1
     elif 2 in board[n-1]: # Cas ou les noirs gagne 
-        gagnat = 2
+        gagnant = 2
     else:
-        gagnat = None # Cas ou il n'y a pas de gagnant ou pas encore(partie pas encore terminé)
-    return gagnat
+        gagnant = None # Cas ou il n'y a pas de gagnant ou pas encore(partie pas encore terminé)
+    return gagnant
 
 def extract_pos(n, str_pos):
     """
@@ -40,7 +40,7 @@ def extract_pos(n, str_pos):
 
 def init_board(file):
     """
-    Permet de créer la matrice
+    Permet de créer la matrice représentant le plateau 
     """
     matrice = []
     if type(file) == int or file == None: # Plateau par defaut (7 * 7)
@@ -480,6 +480,7 @@ def main():
     (taille du plateau, possibilité de jouer contre l'ia)
     """
     argument = sys.argv
+    print(argument)
     if len(argument) == 1: # Plateau par defaut, mode joueur contre joueur
         lancer_jeu(7, 0)
     elif len(argument) == 2: # Le plateau est donner par un fichier texte, mode joueur contre joueur 
@@ -488,7 +489,7 @@ def main():
         else:
             print("mauvais non de fichier")
     elif len(argument) == 3: # Le plateau est donner par un fichier texte, joueur contre ia
-        if os.path.isfile(argument[2]) == True:
+        if os.path.isfile(argument[1]) == True:
             lancer_jeu(argument[1], 2)
         else:
             pass
